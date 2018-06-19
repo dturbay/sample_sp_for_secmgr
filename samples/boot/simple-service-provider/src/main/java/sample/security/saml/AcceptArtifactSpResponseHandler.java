@@ -53,7 +53,7 @@ import org.springframework.security.saml.saml2.authentication.Response;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
 import org.springframework.security.saml.spi.DefaultSamlAuthentication;
 
-public class AcceptArtigactSpResponseHandler extends SamlMessageHandler<AcceptArtigactSpResponseHandler> {
+public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptArtifactSpResponseHandler> {
 
 	private SamlValidator validator;
   private ExtendedOpenSamlImpl implementation;
@@ -164,7 +164,7 @@ public class AcceptArtigactSpResponseHandler extends SamlMessageHandler<AcceptAr
 		return ProcessingStatus.STOP;
 	}
 
-	public AcceptArtigactSpResponseHandler setValidator(SamlValidator validator) {
+	public AcceptArtifactSpResponseHandler setValidator(SamlValidator validator) {
 		this.validator = validator;
 		return this;
 	}

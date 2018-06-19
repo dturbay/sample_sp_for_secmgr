@@ -42,9 +42,8 @@ import org.springframework.security.saml.spi.DefaultSpResponseHandler;
 import org.springframework.security.saml.spi.DefaultValidator;
 import org.springframework.security.saml.spi.Defaults;
 import org.springframework.security.saml.spi.SpringSecuritySaml;
-import org.springframework.security.saml.spi.opensaml.OpenSamlImplementation;
 import org.springframework.security.saml.util.Network;
-import sample.security.saml.AcceptArtigactSpResponseHandler;
+import sample.security.saml.AcceptArtifactSpResponseHandler;
 import sample.security.saml.ExtendedOpenSamlImpl;
 
 @Configuration
@@ -111,7 +110,7 @@ public class SamlConfiguration {
 
 	@Bean
 	public SamlMessageHandler artifactSpResponseHandler(SamlServerConfiguration configuration) {
-	  return new AcceptArtigactSpResponseHandler()
+	  return new AcceptArtifactSpResponseHandler()
         .setDefaults(defaults())
         .setNetwork(network())
         .setResolver(resolver())
