@@ -8,7 +8,7 @@ COPY ./gradlew ${BUILD_APP_DIR}
 COPY ./settings.gradle ${BUILD_APP_DIR}
 COPY ./gradle.properties ${BUILD_APP_DIR}
 COPY ./samples ${BUILD_APP_DIR}/samples
-COPY ./src ${BUILD_APP_DIR}/src
+#COPY ./src ${BUILD_APP_DIR}/src
 COPY ./gradle ${BUILD_APP_DIR}/gradle
 
 
