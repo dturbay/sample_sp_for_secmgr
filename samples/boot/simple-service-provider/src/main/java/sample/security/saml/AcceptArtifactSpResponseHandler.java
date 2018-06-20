@@ -103,7 +103,7 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
 
     Options clientOptions = new Options();
     // TODO: GET THIS URL FROM CONFIGURATION, MUST BE HTTPS
-    EndpointReference endpointReference = new EndpointReference("http://localhost:8080/security-manager/samlartifact");
+    EndpointReference endpointReference = new EndpointReference("http://secmgr:8080/security-manager/samlartifact");
     clientOptions.setTo(endpointReference);
     clientOptions.setProperty(HTTPConstants.CHUNKED, false);
 
