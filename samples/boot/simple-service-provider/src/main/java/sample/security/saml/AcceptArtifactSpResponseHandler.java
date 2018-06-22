@@ -50,13 +50,22 @@ import org.springframework.security.saml.SamlMessageHandler;
 import org.springframework.security.saml.SamlValidator;
 import org.springframework.security.saml.config.LocalServiceProviderConfiguration;
 import org.springframework.security.saml.saml2.authentication.Response;
+import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
 import org.springframework.security.saml.spi.DefaultSamlAuthentication;
 
 public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptArtifactSpResponseHandler> {
 
+  private SOAPFactory soap11Factory = OMAbstractFactory.getSOAP11Factory();
+  private XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
+
 	private SamlValidator validator;
   private ExtendedOpenSamlImpl implementation;
+
+  // This sample app works with 1 idp,
+  // in case of several idp we have somehow store the idp ID against wich authentication was started
+  // I think the best place - store it in cookies
+  private final static String IDP_ENTITY_ID = "http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY";
 
   @Override
 	protected ProcessingStatus process(HttpServletRequest request,
@@ -65,20 +74,14 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
 		ServiceProviderMetadata local = getResolver().getLocalServiceProvider(getNetwork().getBasePath(request));
     String artifact = request.getParameter("SAMLart");
     try {
-      // IdentityProviderMetadata localIdentityProvider = getResolver()
-      //     .getLocalIdentityProvider(getNetwork().getBasePath(request));
       Response artifactResponse = resolveArtifact(artifact, local);
-      // TODO: GET THIS ID FROM CONFIGURATION
-      authenticate(artifactResponse, local.getEntityId(), "http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY");
+      authenticate(artifactResponse, local.getEntityId(), IDP_ENTITY_ID);
       return postAuthentication(request, response);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
 	}
-
-  // make it once
-  SOAPFactory soap11Factory = OMAbstractFactory.getSOAP11Factory();
 
   private Response resolveArtifact(final String artifactString,
       ServiceProviderMetadata local)
@@ -102,8 +105,10 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
     soapBody.addChild(req);
 
     Options clientOptions = new Options();
-    // TODO: GET THIS URL FROM CONFIGURATION, MUST BE HTTPS
-    EndpointReference endpointReference = new EndpointReference("http://secmgr:8080/security-manager/samlartifact");
+    IdentityProviderMetadata idpMetadata = getResolver().resolveIdentityProvider(IDP_ENTITY_ID);
+    String artifactResolutionEndpoint = idpMetadata.getIdentityProvider().getArtifactResolutionService().get(0)
+        .getLocation();
+    EndpointReference endpointReference = new EndpointReference(artifactResolutionEndpoint);
     clientOptions.setTo(endpointReference);
     clientOptions.setProperty(HTTPConstants.CHUNKED, false);
 
@@ -115,8 +120,6 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
     return artifactResponse;
   }
 
-
-	XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
   /**
    * Converts a JDOM document into an Axiom OMElement.
    */
@@ -127,14 +130,11 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
 		XMLStreamReader parser =
         xmlFactory.createXMLStreamReader(
             new ByteArrayInputStream(xmlBytes));
-    //create the builder
-    // StAXOMBuilder builder = new StAXOMBuilder(parser);
 		OMXMLParserWrapper builder = OMXMLBuilderFactory.createStAXOMBuilder(parser);
     //get the root element of the XML
     OMElement documentElement = builder.getDocumentElement();
     return documentElement;
   }
-
 
 	@Override
 	public boolean supports(HttpServletRequest request) {

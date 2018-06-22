@@ -30,7 +30,7 @@ public class ExtendedOpenSamlImpl extends OpenSamlImplementation {
       if (xmlObject instanceof org.opensaml.saml.saml2.core.ArtifactResponse) {
         org.opensaml.saml.saml2.core.ArtifactResponse openSamlArtResponse =
             (org.opensaml.saml.saml2.core.ArtifactResponse) xmlObject;
-        return resolveResponse((org.opensaml.saml.saml2.core.Response)openSamlArtResponse.getMessage(), null, null);
+        return resolveResponse((org.opensaml.saml.saml2.core.Response) openSamlArtResponse.getMessage(), null, null);
       }
       throw new RuntimeException(exception);
     }

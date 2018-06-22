@@ -65,4 +65,17 @@ spring:
         providers:
         - name: http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY
           link-text: Security Manager
-          metadata: <?xml version="1.0" encoding="UTF-8"?> <EntityDescriptor     xmlns="urn:oasis:names:tc:SAML:2.0:metadata"     entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY"     ID="security-manager">    <IDPSSODescriptor       protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">     <ArtifactResolutionService         index="0"         isDefault="true"         Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"         Location="https://localhost:8443/security-manager/samlartifact"     />     <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>     <SingleSignOnService         Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"         Location="https://localhost:8443/security-manager/samlauthn"     />   </IDPSSODescriptor>    <Organization>     <OrganizationName xml:lang="en">google.com</OrganizationName>     <OrganizationDisplayName  xml:lang="en">Google Inc.</OrganizationDisplayName>     <OrganizationURL  xml:lang="en">http://www.google.com/</OrganizationURL>   </Organization>  </EntityDescriptor>
+          metadata: |
+            <?xml version="1.0" encoding="UTF-8"?>
+            <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY" ID="security-manager">
+              <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr:8443/security-manager/samlartifact" />
+                <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
+                <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr:8443/security-manager/samlauthn" />
+              </IDPSSODescriptor>
+              <Organization>
+                <OrganizationName xml:lang="en">google.com</OrganizationName>
+                <OrganizationDisplayName xml:lang="en">Google Inc.</OrganizationDisplayName>
+                <OrganizationURL xml:lang="en">http://www.google.com/</OrganizationURL>
+              </Organization>
+            </EntityDescriptor>
