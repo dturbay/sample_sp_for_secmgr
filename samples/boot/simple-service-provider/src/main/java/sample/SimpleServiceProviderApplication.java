@@ -33,7 +33,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SimpleServiceProviderApplication {
 
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ClassNotFoundException {
 
     // ONLY FOR DEMO!!!!
 		trustAllCertificates();
@@ -41,9 +41,11 @@ public class SimpleServiceProviderApplication {
 		SpringApplication.run(SimpleServiceProviderApplication.class, args);
 	}
 
-  private static void trustAllCertificates() {
+  private static void trustAllCertificates() throws ClassNotFoundException {
 
     System.setProperty("jsse.enableSNIExtension", "false");
+
+    Class.forName("sample.CustomSslSocketFactory");
     Security.setProperty("ssl.SocketFactory.provider", "sample.CustomSslSocketFactory");
 
     final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
