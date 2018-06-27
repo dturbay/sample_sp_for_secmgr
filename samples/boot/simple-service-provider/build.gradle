@@ -54,3 +54,15 @@ dependencies {
 	testCompile 'org.springframework.security:spring-security-test'
 
 }
+
+// CustomSslSocketFactory must be loaded by standard system class loader but not spring-boot classloader
+bootJar {
+	with copySpec {
+		from "$buildDir/classes/java/main/sample/CustomSslSocketFactory.class"
+		into 'sample/'
+	}
+	with copySpec {
+		from "$buildDir/classes/java/main/sample/CustomSslSocketFactory\$1.class"
+		into 'sample/'
+	}
+}
