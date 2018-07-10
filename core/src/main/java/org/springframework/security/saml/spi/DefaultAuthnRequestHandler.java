@@ -39,7 +39,9 @@ public class DefaultAuthnRequestHandler extends SamlMessageHandler<DefaultAuthnR
 	protected ProcessingStatus process(HttpServletRequest request,
 									   HttpServletResponse response) throws IOException {
 		ServiceProviderMetadata local = getResolver().getLocalServiceProvider(getNetwork().getBasePath(request));
-		IdentityProviderMetadata idp = getResolver().resolveIdentityProvider(request.getParameter("idp"));
+		String idpId = request.getParameter("idp");
+		request.getSession().setAttribute("idp", idpId);
+		IdentityProviderMetadata idp = getResolver().resolveIdentityProvider(idpId);
 		AuthenticationRequest authenticationRequest = getAuthenticationRequest(local, idp);
 		String url = getAuthnRequestRedirect(idp, authenticationRequest);
 		response.sendRedirect(url);
@@ -60,6 +62,7 @@ public class DefaultAuthnRequestHandler extends SamlMessageHandler<DefaultAuthnR
 		Endpoint endpoint = m.getIdentityProvider().getSingleSignOnService().get(0);
 		UriComponentsBuilder url = UriComponentsBuilder.fromUriString(endpoint.getLocation());
 		url.queryParam("SAMLRequest", encoded);
+		url.queryParam("RelayState", UriUtils.encode("http://localhost:8088/sample-sp", StandardCharsets.UTF_8.name()));
 		return url.build(true).toUriString();
 	}
 

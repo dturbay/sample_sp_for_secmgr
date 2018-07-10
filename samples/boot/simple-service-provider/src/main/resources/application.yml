@@ -64,14 +64,31 @@ spring:
                 -----END CERTIFICATE-----
         providers:
         - name: http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY
-          link-text: Security Manager
+          link-text: Complex Security Manager (SAML authn mechanism + LDAP configured)
           metadata: |
             <?xml version="1.0" encoding="UTF-8"?>
             <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY" ID="security-manager">
               <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr:8443/security-manager/samlartifact" />
+                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://secmgr:8080/security-manager/samlartifact" />
                 <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr:8443/security-manager/samlauthn" />
+              </IDPSSODescriptor>
+              <Organization>
+                <OrganizationName xml:lang="en">google.com</OrganizationName>
+                <OrganizationDisplayName xml:lang="en">Google Inc.</OrganizationDisplayName>
+                <OrganizationURL xml:lang="en">http://www.google.com/</OrganizationURL>
+              </Organization>
+            </EntityDescriptor>
+
+        - name: http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY1
+          link-text: Basic Security Manager (http basic authentication mechanism configured)
+          metadata: |
+            <?xml version="1.0" encoding="UTF-8"?>
+            <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY1" ID="security-manager">
+              <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://secmgr1:8090/security-manager/samlartifact" />
+                <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
+                <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr1:8493/security-manager/samlauthn" />
               </IDPSSODescriptor>
               <Organization>
                 <OrganizationName xml:lang="en">google.com</OrganizationName>

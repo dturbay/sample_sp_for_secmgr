@@ -62,11 +62,6 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
 	private SamlValidator validator;
   private ExtendedOpenSamlImpl implementation;
 
-  // This sample app works with 1 idp,
-  // in case of several idp we have somehow store the idp ID against wich authentication was started
-  // I think the best place - store it in cookies
-  private final static String IDP_ENTITY_ID = "http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY";
-
   @Override
 	protected ProcessingStatus process(HttpServletRequest request,
 									   HttpServletResponse response) throws IOException {
@@ -74,8 +69,9 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
 		ServiceProviderMetadata local = getResolver().getLocalServiceProvider(getNetwork().getBasePath(request));
     String artifact = request.getParameter("SAMLart");
     try {
-      Response artifactResponse = resolveArtifact(artifact, local);
-      authenticate(artifactResponse, local.getEntityId(), IDP_ENTITY_ID);
+      String idpId = (String) request.getSession().getAttribute("idp");
+      Response artifactResponse = resolveArtifact(artifact, local, idpId);
+      authenticate(artifactResponse, local.getEntityId(), idpId);
       return postAuthentication(request, response);
 
     } catch (Exception e) {
@@ -84,7 +80,7 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
 	}
 
   private Response resolveArtifact(final String artifactString,
-      ServiceProviderMetadata local)
+      ServiceProviderMetadata local, String idpId)
       throws IllegalArgumentException, SecurityException, AxisFault, XMLStreamException {
     // populate SAML request
     ArtifactResolve artifactResolve = implementation.buildSAMLObject(ArtifactResolve.class);
@@ -105,7 +101,7 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
     soapBody.addChild(req);
 
     Options clientOptions = new Options();
-    IdentityProviderMetadata idpMetadata = getResolver().resolveIdentityProvider(IDP_ENTITY_ID);
+    IdentityProviderMetadata idpMetadata = getResolver().resolveIdentityProvider(idpId);
     String artifactResolutionEndpoint = idpMetadata.getIdentityProvider().getArtifactResolutionService().get(0)
         .getLocation();
     EndpointReference endpointReference = new EndpointReference(artifactResolutionEndpoint);
