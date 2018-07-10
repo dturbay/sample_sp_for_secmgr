@@ -64,7 +64,7 @@ spring:
                 -----END CERTIFICATE-----
         providers:
         - name: http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY
-          link-text: Complex Security Manager (SAML authn mechanism + LDAP configured)
+          link-text: Complex Security Manager (SAML authn mechanism + LDAP configured) credentials user1:password1
           metadata: |
             <?xml version="1.0" encoding="UTF-8"?>
             <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY" ID="security-manager">
@@ -81,7 +81,7 @@ spring:
             </EntityDescriptor>
 
         - name: http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY1
-          link-text: Basic Security Manager (http basic authentication mechanism configured)
+          link-text: Basic Security Manager (http basic authentication mechanism configured)  credentials user1:password1   user2:password2
           metadata: |
             <?xml version="1.0" encoding="UTF-8"?>
             <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY1" ID="security-manager">
