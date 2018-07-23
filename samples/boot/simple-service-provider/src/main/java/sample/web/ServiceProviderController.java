@@ -16,14 +16,23 @@
  */
 package sample.web;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.saml.SamlObjectResolver;
 import org.springframework.security.saml.config.ExternalProviderConfiguration;
+import org.springframework.security.saml.saml2.SamlAuthzClient;
+import org.springframework.security.saml.saml2.authentication.Response;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
+import org.springframework.security.saml.saml2.metadata.PolicyDecisionProviderMetadata;
+import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
 import org.springframework.security.saml.util.Network;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,6 +51,8 @@ public class ServiceProviderController {
 	private SamlObjectResolver resolver;
 	private Network network;
 
+	private SamlAuthzClient samlAuthzClient;
+
 	@Autowired
 	public void setNetwork(Network network) {
 		this.network = network;
@@ -57,9 +68,34 @@ public class ServiceProviderController {
 		this.resolver = resolver;
 	}
 
+	@Autowired
+	public void setSamlAuthzClient(SamlAuthzClient samlAuthzClient) {
+		this.samlAuthzClient = samlAuthzClient;
+	}
+
 	@RequestMapping(value = {"/", "/index", "logged-in"})
-	public String home() {
-		return "logged-in";
+	public String home(HttpServletRequest request, Model model) {
+    ServiceProviderMetadata localServiceProvider = resolver
+        .getLocalServiceProvider(network.getBasePath(request));
+    String idpId = (String) request.getSession().getAttribute("idp");
+    PolicyDecisionProviderMetadata pdpMetadata = resolver.resolvePolicyDecisionProvider(idpId);
+    Cookie gsaSessionIdCookie = Arrays.stream(request.getCookies())
+        .filter(cookie -> cookie.getName().equalsIgnoreCase("GSA_SESSION_ID")).findFirst().get();
+    String gsaSessionId = gsaSessionIdCookie.getValue();
+
+    List<String> resources = Arrays.asList(
+        "https://www.google.com/",
+        "http://http-authn:4444/resource1",
+        "http://http-authn:4444/resource2");
+    Map<String, String> resourceStatus = resources.stream()
+        .collect(Collectors.toMap(Function.identity(), resource -> {
+          Response authzResponse = samlAuthzClient.sendAuthzRequest(resource, gsaSessionId,
+              localServiceProvider, pdpMetadata);
+          return authzResponse.getAssertions().get(0).getAuthzDecisionStatements().get(0)
+              .getDecision().toString();
+        }));
+    model.addAttribute("resources", resourceStatus);
+    return "logged-in";
 	}
 
 	@RequestMapping("/saml/sp/select")

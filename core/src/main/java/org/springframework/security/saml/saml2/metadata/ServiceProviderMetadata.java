@@ -21,11 +21,13 @@ package org.springframework.security.saml.saml2.metadata;
  */
 public class ServiceProviderMetadata extends Metadata<ServiceProviderMetadata> {
 
+	public static ServiceProviderMetadata copyFrom(Metadata metadata) {
+		ServiceProviderMetadata result = new ServiceProviderMetadata();
+		Metadata.copyProps(metadata, result);
+		return result;
+	}
+
 	public ServiceProvider getServiceProvider() {
-		return (ServiceProvider) getProviders()
-			.stream()
-			.filter(p -> p instanceof ServiceProvider)
-			.findFirst()
-			.get();
+		return findProviderByType(ServiceProvider.class);
 	}
 }

@@ -37,5 +37,20 @@
 <div>
 	<span style="font-weight:bold">You are authenticated!</span>
 </div>
+
+<div>
+	Resources status:
+<table>
+  <tr>
+    <th>Resource</th>
+    <th>Access status</th>
+  </tr>
+  <tr th:each="r : ${resources}">
+    <td th:text="${r.key}">key</td>
+    <td th:text="${r.value}">value</td>
+  </tr>
+</table>
+
+</div>
 </body>
 </html>

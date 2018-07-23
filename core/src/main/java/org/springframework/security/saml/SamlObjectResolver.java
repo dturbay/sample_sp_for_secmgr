@@ -23,6 +23,7 @@ import org.springframework.security.saml.saml2.authentication.AuthenticationRequ
 import org.springframework.security.saml.saml2.authentication.LogoutRequest;
 import org.springframework.security.saml.saml2.authentication.Response;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
+import org.springframework.security.saml.saml2.metadata.PolicyDecisionProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
 
 public interface SamlObjectResolver {
@@ -48,4 +49,8 @@ public interface SamlObjectResolver {
 	ServiceProviderMetadata resolveServiceProvider(ExternalProviderConfiguration sp);
 
 	ServiceProviderMetadata resolveServiceProvider(LogoutRequest logoutRequest);
+
+	PolicyDecisionProviderMetadata resolvePolicyDecisionProvider(String entityId);
+
+	PolicyDecisionProviderMetadata resolvePolicyDecisionProvider(ExternalProviderConfiguration idp);
 }

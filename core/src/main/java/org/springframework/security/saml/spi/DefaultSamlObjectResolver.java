@@ -37,6 +37,8 @@ import org.springframework.security.saml.saml2.authentication.LogoutRequest;
 import org.springframework.security.saml.saml2.authentication.Response;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.Metadata;
+import org.springframework.security.saml.saml2.metadata.PolicyDecisionProviderMetadata;
+import org.springframework.security.saml.saml2.metadata.ServiceProvider;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
 import org.springframework.security.saml.util.Network;
 
@@ -143,7 +145,24 @@ public class DefaultSamlObjectResolver implements SamlObjectResolver {
 
 	@Override
 	public IdentityProviderMetadata resolveIdentityProvider(ExternalProviderConfiguration idp) {
-		return (IdentityProviderMetadata) resolve(idp.getMetadata(), idp.isSkipSslValidation());
+		return IdentityProviderMetadata.copyFrom(resolve(idp.getMetadata(), idp.isSkipSslValidation()));
+	}
+
+
+	@Override
+	public PolicyDecisionProviderMetadata resolvePolicyDecisionProvider(String entityId) {
+		for (ExternalProviderConfiguration c : configuration.getServiceProvider().getProviders()) {
+			PolicyDecisionProviderMetadata idp = resolvePolicyDecisionProvider(c);
+			if (idp != null && entityId.equals(idp.getEntityId())) {
+				return idp;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public PolicyDecisionProviderMetadata resolvePolicyDecisionProvider(ExternalProviderConfiguration idp) {
+		return PolicyDecisionProviderMetadata.copyFrom(resolve(idp.getMetadata(), idp.isSkipSslValidation()));
 	}
 
 	@Override
@@ -152,8 +171,8 @@ public class DefaultSamlObjectResolver implements SamlObjectResolver {
 		for (ExternalProviderConfiguration c : idp.getProviders()) {
 			String metadata = c.getMetadata();
 			Metadata m = resolve(metadata, c.isSkipSslValidation());
-			if (m instanceof ServiceProviderMetadata && entityId.equals(m.getEntityId())) {
-				return (ServiceProviderMetadata) m;
+			if (entityId.equals(m.getEntityId()) && m.getProviders().stream().anyMatch(p -> p instanceof ServiceProvider)) {
+				return ServiceProviderMetadata.copyFrom(m);
 			}
 		}
 		return null;

@@ -73,6 +73,9 @@ spring:
                 <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr:8443/security-manager/samlauthn" />
               </IDPSSODescriptor>
+              <PDPDescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+                  <AuthzService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr:8443/security-manager/samlauthz" />
+              </PDPDescriptor>
               <Organization>
                 <OrganizationName xml:lang="en">google.com</OrganizationName>
                 <OrganizationDisplayName xml:lang="en">Google Inc.</OrganizationDisplayName>
@@ -90,6 +93,9 @@ spring:
                 <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr1:8493/security-manager/samlauthn" />
               </IDPSSODescriptor>
+              <PDPDescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+                  <AuthzService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr1:8493/security-manager/samlauthz" />
+              </PDPDescriptor>
               <Organization>
                 <OrganizationName xml:lang="en">google.com</OrganizationName>
                 <OrganizationDisplayName xml:lang="en">Google Inc.</OrganizationDisplayName>

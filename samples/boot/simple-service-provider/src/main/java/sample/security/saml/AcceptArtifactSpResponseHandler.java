@@ -20,6 +20,7 @@ package sample.security.saml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,6 +50,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.saml.SamlMessageHandler;
 import org.springframework.security.saml.SamlValidator;
 import org.springframework.security.saml.config.LocalServiceProviderConfiguration;
+import org.springframework.security.saml.saml2.attribute.Attribute;
 import org.springframework.security.saml.saml2.authentication.Response;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
@@ -71,6 +73,13 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
     try {
       String idpId = (String) request.getSession().getAttribute("idp");
       Response artifactResponse = resolveArtifact(artifact, local, idpId);
+      Attribute sessionIdAttr = artifactResponse.getAssertions().get(0).getAttributes()
+          .stream().filter(attr -> attr.getName().equalsIgnoreCase("SessionId")).findFirst().get();
+      String sessionId = (String) sessionIdAttr.getValues().get(0);
+      Cookie sessionCookie = new Cookie("GSA_SESSION_ID", sessionId);
+      sessionCookie.setHttpOnly(true);
+      sessionCookie.setPath("/");
+      response.addCookie(sessionCookie);
       authenticate(artifactResponse, local.getEntityId(), idpId);
       return postAuthentication(request, response);
 

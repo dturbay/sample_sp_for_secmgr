@@ -21,16 +21,17 @@ package org.springframework.security.saml.saml2.metadata;
  */
 public class IdentityProviderMetadata extends Metadata<IdentityProviderMetadata> {
 
-	private NameId defaultNameId = null;
-
-	public IdentityProvider getIdentityProvider() {
-		return (IdentityProvider) getProviders()
-			.stream()
-			.filter(p -> p instanceof IdentityProvider)
-			.findFirst()
-			.get();
-
+	public static IdentityProviderMetadata copyFrom(Metadata metadata) {
+    IdentityProviderMetadata result = new IdentityProviderMetadata();
+    Metadata.copyProps(metadata, result);
+    return result;
 	}
+
+  public IdentityProvider getIdentityProvider() {
+		return findProviderByType(IdentityProvider.class);
+	}
+
+	private NameId defaultNameId = null;
 
 	public NameId getDefaultNameId() {
 		return defaultNameId;

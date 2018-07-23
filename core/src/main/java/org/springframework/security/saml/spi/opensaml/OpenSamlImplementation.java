@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 import javax.xml.datatype.Duration;
 import javax.xml.namespace.QName;
 
+import org.opensaml.saml.saml2.metadata.PDPDescriptor;
 import org.springframework.security.saml.key.KeyType;
 import org.springframework.security.saml.key.SimpleKey;
 import org.springframework.security.saml.saml2.ImplementationHolder;
@@ -62,6 +63,9 @@ import org.springframework.security.saml.saml2.authentication.AuthenticationCont
 import org.springframework.security.saml.saml2.authentication.AuthenticationContextClassReference;
 import org.springframework.security.saml.saml2.authentication.AuthenticationRequest;
 import org.springframework.security.saml.saml2.authentication.AuthenticationStatement;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.Action;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.DecisionType;
 import org.springframework.security.saml.saml2.authentication.Conditions;
 import org.springframework.security.saml.saml2.authentication.Issuer;
 import org.springframework.security.saml.saml2.authentication.LogoutReason;
@@ -79,15 +83,14 @@ import org.springframework.security.saml.saml2.authentication.SubjectConfirmatio
 import org.springframework.security.saml.saml2.authentication.SubjectConfirmationData;
 import org.springframework.security.saml.saml2.authentication.SubjectConfirmationMethod;
 import org.springframework.security.saml.saml2.authentication.SubjectPrincipal;
+import org.springframework.security.saml.saml2.metadata.PolicyDecisionProvider;
 import org.springframework.security.saml.saml2.metadata.Binding;
 import org.springframework.security.saml.saml2.metadata.Endpoint;
 import org.springframework.security.saml.saml2.metadata.IdentityProvider;
-import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.Metadata;
 import org.springframework.security.saml.saml2.metadata.NameId;
 import org.springframework.security.saml.saml2.metadata.Provider;
 import org.springframework.security.saml.saml2.metadata.ServiceProvider;
-import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.SsoProvider;
 import org.springframework.security.saml.saml2.signature.AlgorithmMethod;
 import org.springframework.security.saml.saml2.signature.CanonicalizationMethod;
@@ -613,8 +616,15 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 			provider.setRequestInitiation(getRequestInitiation(desc));
 			return provider;
 		}
-		else {
-
+		else if (descriptor instanceof PDPDescriptor) {
+			PDPDescriptor desc = (PDPDescriptor) descriptor;
+			PolicyDecisionProvider provider = new PolicyDecisionProvider();
+      provider.setId(desc.getID());
+      provider.setValidUntil(desc.getValidUntil());
+      provider.setProtocolSupportEnumeration(desc.getSupportedProtocols());
+      provider.setNameIds(getNameIDs(desc.getNameIDFormats()));
+			provider.setAuthzService(getEndpoints(desc.getAuthzServices()));
+			return provider;
 		}
 		throw new UnsupportedOperationException();
 	}
@@ -1236,20 +1246,30 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 		List<SimpleKey> localKeys
 	) {
 		Signature signature = validateSignature(parsed, verificationKeys);
-		return new Assertion()
-			.setSignature(signature)
-			.setId(parsed.getID())
-			.setIssueInstant(parsed.getIssueInstant())
-			.setVersion(parsed.getVersion().toString())
-			.setIssuer(getIssuer(parsed.getIssuer()))
-			.setSubject(getSubject(parsed.getSubject(), localKeys))
-			.setConditions(getConditions(parsed.getConditions()))
-			.setAuthenticationStatements(getAuthenticationStatements(parsed.getAuthnStatements()))
-			.setAttributes(getAttributes(parsed.getAttributeStatements(), localKeys))
-			;
+    return new Assertion()
+        .setSignature(signature)
+        .setId(parsed.getID())
+        .setIssueInstant(parsed.getIssueInstant())
+        .setVersion(parsed.getVersion().toString())
+        .setIssuer(getIssuer(parsed.getIssuer()))
+        .setSubject(getSubject(parsed.getSubject(), localKeys))
+        .setConditions(getConditions(parsed.getConditions()))
+        .setAuthenticationStatements(getAuthenticationStatements(parsed.getAuthnStatements()))
+        .setAttributes(getAttributes(parsed.getAttributeStatements(), localKeys))
+        .setAuthzDecisionStatements(getAuthzStatements(parsed.getAuthzDecisionStatements()));
 	}
 
-	protected List<Attribute> getRequestedAttributes(List<RequestedAttribute> attributes) {
+  private List<AuthzDecisionStatement> getAuthzStatements(
+      List<org.opensaml.saml.saml2.core.AuthzDecisionStatement> authzDecisionStatements) {
+    return authzDecisionStatements.stream().map(
+        authz -> new AuthzDecisionStatement(authz.getResource(),
+            DecisionType.valueOf(authz.getDecision().toString().toUpperCase()),
+            authz.getActions().stream().map(action -> Action.parse(action.getAction()))
+                .collect(Collectors.toList()))).collect(
+        Collectors.toList());
+  }
+
+  protected List<Attribute> getRequestedAttributes(List<RequestedAttribute> attributes) {
 		List<Attribute> result = new LinkedList<>();
 		for (RequestedAttribute a : ofNullable(attributes).orElse(emptyList())) {
 			result.add(
@@ -1363,6 +1383,9 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 	}
 
 	protected Conditions getConditions(org.opensaml.saml.saml2.core.Conditions conditions) {
+	  if (conditions == null) {
+	    return null;
+    }
 		return new Conditions()
 			.setNotBefore(conditions.getNotBefore())
 			.setNotOnOrAfter(conditions.getNotOnOrAfter())
@@ -1539,14 +1562,14 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 
 	protected Metadata getMetadata(List<? extends Provider> ssoProviders) {
 		Metadata result = new Metadata();
-		if (ssoProviders.size() == 1) {
-			if (ssoProviders.get(0) instanceof ServiceProvider) {
-				result = new ServiceProviderMetadata();
-			}
-			else if (ssoProviders.get(0) instanceof IdentityProvider) {
-				result = new IdentityProviderMetadata();
-			}
-		}
+		// if (ssoProviders.size() == 1) {
+		// 	if (ssoProviders.get(0) instanceof ServiceProvider) {
+		// 		result = new ServiceProviderMetadata();
+		// 	}
+		// 	else if (ssoProviders.get(0) instanceof IdentityProvider) {
+		// 		result = new IdentityProviderMetadata();
+		// 	}
+		// }
 		result.setProviders(ssoProviders);
 		return result;
 	}

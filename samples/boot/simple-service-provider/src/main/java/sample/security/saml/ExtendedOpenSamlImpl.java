@@ -10,6 +10,7 @@ import org.springframework.security.saml.key.SimpleKey;
 import org.springframework.security.saml.saml2.Saml2Object;
 import org.springframework.security.saml.spi.opensaml.OpenSamlImplementation;
 
+// TODO: remove this class, move ArtifactResponse handling to super class
 public class ExtendedOpenSamlImpl extends OpenSamlImplementation {
 
   public ExtendedOpenSamlImpl(Clock time) {

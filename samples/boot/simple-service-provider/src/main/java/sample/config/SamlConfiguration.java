@@ -28,6 +28,7 @@ import org.springframework.security.saml.SamlMessageHandler;
 import org.springframework.security.saml.SamlTransformer;
 import org.springframework.security.saml.SamlValidator;
 import org.springframework.security.saml.config.SamlServerConfiguration;
+import org.springframework.security.saml.saml2.SamlAuthzClient;
 import org.springframework.security.saml.saml2.authentication.AuthenticationRequest;
 import org.springframework.security.saml.saml2.metadata.Binding;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
@@ -166,5 +167,10 @@ public class SamlConfiguration {
 	@Bean
 	public Network network() {
 		return new Network();
+	}
+
+	@Bean
+	public SamlAuthzClient samlAuthzClient() {
+		return new SamlAuthzClient();
 	}
 }

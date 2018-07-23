@@ -33,4 +33,21 @@ import org.springframework.security.saml.saml2.Saml2Object;
  * </ul>
  */
 public class Metadata<T extends EntityDescriptor<T>> extends EntityDescriptor<T> implements Saml2Object {
+
+  protected <T> T findProviderByType(Class<T> clazz) {
+    return (T) getProviders()
+        .stream()
+        .filter(p -> clazz.isInstance(p))
+        .findFirst()
+        .get();
+  }
+
+  static void copyProps(Metadata metadataFrom, Metadata metadataTo) {
+    metadataTo.setCacheDuration(metadataFrom.getCacheDuration());
+    metadataTo.setEntityId(metadataFrom.getEntityId());
+    metadataTo.setEntityAlias(metadataFrom.getEntityAlias());
+    metadataTo.setId(metadataFrom.getId());
+    metadataTo.setValidUntil(metadataFrom.getValidUntil());
+    metadataTo.setProviders(metadataFrom.getProviders());
+  }
 }

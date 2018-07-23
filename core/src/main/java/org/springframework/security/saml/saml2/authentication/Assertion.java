@@ -17,6 +17,7 @@
 
 package org.springframework.security.saml.saml2.authentication;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +41,8 @@ public class Assertion extends ImplementationHolder {
 	private Subject subject;
 	private Conditions conditions;
 	private Advice advice;
-	private List<AuthenticationStatement> authenticationStatements = new LinkedList<>();
+	private List<AuthenticationStatement> authenticationStatements = new ArrayList<>();
+	private List<AuthzDecisionStatement> authzDecisionStatements = new ArrayList<>();
 	private List<Attribute> attributes = new LinkedList<>();
 	private SimpleKey signingKey;
 	private AlgorithmMethod algorithm;
@@ -127,6 +129,16 @@ public class Assertion extends ImplementationHolder {
 		this.authenticationStatements.addAll(authenticationStatements);
 		return this;
 	}
+
+  public List<AuthzDecisionStatement> getAuthzDecisionStatements() {
+    return authzDecisionStatements;
+  }
+
+  public Assertion setAuthzDecisionStatements(List<AuthzDecisionStatement> statements) {
+    this.authzDecisionStatements.clear();
+    this.authzDecisionStatements.addAll(statements);
+    return this;
+  }
 
 	public List<Attribute> getAttributes() {
 		return Collections.unmodifiableList(attributes);
