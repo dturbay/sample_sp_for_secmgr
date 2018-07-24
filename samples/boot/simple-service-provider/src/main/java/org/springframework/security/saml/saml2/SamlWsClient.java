@@ -27,15 +27,14 @@ import org.opensaml.saml.saml2.core.NameID;
 import org.opensaml.saml.saml2.core.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.saml.saml2.authentication.Response;
-import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.PolicyDecisionProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
-import sample.security.saml.ExtendedOpenSamlImpl;
+import org.springframework.security.saml.spi.opensaml.OpenSamlImplementation;
 
 public class SamlAuthzClient {
 
   @Autowired
-  private ExtendedOpenSamlImpl implementation;
+  private OpenSamlImplementation implementation;
 
   private SOAPFactory soap11Factory = OMAbstractFactory.getSOAP11Factory();
   private XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
@@ -44,7 +43,7 @@ public class SamlAuthzClient {
       ServiceProviderMetadata local,
       PolicyDecisionProviderMetadata pdpMetadata) {
     AuthzDecisionQuery query = makeAuthzQuery(new DateTime(), sessionId, resource, local);
-    String queryXmlRep = implementation.toXml(query);
+    String queryXmlRep = implementation.marshallToXml(query);
     OMNamespace ns = soap11Factory.createOMNamespace(
         "http://www.oasis-open.org/committees/security", "ns1");
     SOAPEnvelope envelope = soap11Factory.createSOAPEnvelope(ns);
