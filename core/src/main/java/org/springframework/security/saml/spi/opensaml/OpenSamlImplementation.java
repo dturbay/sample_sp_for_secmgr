@@ -49,6 +49,9 @@ import java.util.stream.Collectors;
 import javax.xml.datatype.Duration;
 import javax.xml.namespace.QName;
 
+import org.opensaml.saml.saml2.core.Artifact;
+import org.opensaml.saml.saml2.core.ArtifactResolve;
+import org.opensaml.saml.saml2.core.AuthzDecisionQuery;
 import org.opensaml.saml.saml2.metadata.PDPDescriptor;
 import org.springframework.security.saml.key.KeyType;
 import org.springframework.security.saml.key.SimpleKey;
@@ -56,6 +59,7 @@ import org.springframework.security.saml.saml2.ImplementationHolder;
 import org.springframework.security.saml.saml2.Saml2Object;
 import org.springframework.security.saml.saml2.attribute.Attribute;
 import org.springframework.security.saml.saml2.attribute.AttributeNameFormat;
+import org.springframework.security.saml.saml2.authentication.ArtifactResolveRequest;
 import org.springframework.security.saml.saml2.authentication.Assertion;
 import org.springframework.security.saml.saml2.authentication.AssertionCondition;
 import org.springframework.security.saml.saml2.authentication.AudienceRestriction;
@@ -63,6 +67,7 @@ import org.springframework.security.saml.saml2.authentication.AuthenticationCont
 import org.springframework.security.saml.saml2.authentication.AuthenticationContextClassReference;
 import org.springframework.security.saml.saml2.authentication.AuthenticationRequest;
 import org.springframework.security.saml.saml2.authentication.AuthenticationStatement;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionQueryRequest;
 import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement;
 import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.Action;
 import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.DecisionType;
@@ -377,6 +382,12 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 		else if (saml2Object instanceof LogoutResponse) {
 			result = internalToXml((LogoutResponse) saml2Object);
 		}
+		else if (saml2Object instanceof ArtifactResolveRequest) {
+			result = internalToXml((ArtifactResolveRequest) saml2Object);
+		}
+		else if (saml2Object instanceof AuthzDecisionQueryRequest) {
+      result = internalToXml((AuthzDecisionQueryRequest) saml2Object);
+    }
 		if (result != null) {
 			return marshallToXml(result);
 		}
@@ -424,7 +435,15 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 			)
 				.setSignature(signature);
 		}
-		if (result != null) {
+    else if (parsed instanceof org.opensaml.saml.saml2.core.ArtifactResponse) {
+      org.opensaml.saml.saml2.core.ArtifactResponse openSamlArtResponse =
+          (org.opensaml.saml.saml2.core.ArtifactResponse) parsed;
+      result = resolveResponse((org.opensaml.saml.saml2.core.Response) openSamlArtResponse.getMessage(),
+          null,
+          null);
+    }
+
+    if (result != null) {
 			if (result instanceof ImplementationHolder) {
 				((ImplementationHolder) result).setImplementation(parsed);
 				((ImplementationHolder) result).setOriginalXML(new String(xml, StandardCharsets.UTF_8));
@@ -1104,6 +1123,43 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 		return auth;
 	}
 
+	protected ArtifactResolve internalToXml(ArtifactResolveRequest request) {
+    ArtifactResolve artifactResolve = buildSAMLObject(ArtifactResolve.class);
+    artifactResolve.setID(request.getId());
+    artifactResolve.setVersion(SAMLVersion.VERSION_20);
+    artifactResolve.setIssueInstant(request.getIssueInstant());
+    artifactResolve.setIssuer(toIssuer(request.getIssuer()));
+
+    artifactResolve.setArtifact(toArtifact(request.getArtifact()));
+
+    return artifactResolve;
+  }
+
+  protected AuthzDecisionQuery internalToXml(AuthzDecisionQueryRequest request) {
+    AuthzDecisionQuery decisionQuery = buildSAMLObject(AuthzDecisionQuery.class);
+    decisionQuery.setID(request.getId());
+    decisionQuery.setVersion(SAMLVersion.VERSION_20);
+    decisionQuery.setIssueInstant(request.getIssueInstant());
+    decisionQuery.setIssuer(toIssuer(request.getIssuer()));
+
+    org.opensaml.saml.saml2.core.Subject subject = buildSAMLObject(
+        org.opensaml.saml.saml2.core.Subject.class);
+    NameID nameID = buildSAMLObject(NameID.class);
+    nameID.setValue(request.getSubject().getPrincipal().getValue());
+    subject.setNameID(nameID);
+
+    decisionQuery.setSubject(subject);
+    decisionQuery.setResource(request.getResource());
+    decisionQuery.getActions().addAll(request.getActions().stream().map(
+        a -> {
+          org.opensaml.saml.saml2.core.Action action = buildSAMLObject(org.opensaml.saml.saml2.core.Action.class);
+          action.setAction(a.getCode());
+          action.setNamespace(org.opensaml.saml.saml2.core.Action.GHPP_NS_URI);
+          return action;
+        }).collect(Collectors.toList()));
+    return decisionQuery;
+  }
+
 	protected String marshallToXml(XMLObject auth) {
 		try {
 			Element element = getMarshallerFactory()
@@ -1502,6 +1558,12 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 				.setSpNameQualifier(issuer.getSPNameQualifier())
 				.setNameQualifier(issuer.getNameQualifier());
 	}
+
+	protected Artifact toArtifact(org.springframework.security.saml.saml2.authentication.Artifact artifact) {
+    Artifact result = buildSAMLObject(Artifact.class);
+    result.setArtifact(artifact.getArtifact());
+    return result;
+  }
 
 	protected AuthenticationRequest resolveAuthenticationRequest(AuthnRequest parsed) {
 		AuthnRequest request = parsed;

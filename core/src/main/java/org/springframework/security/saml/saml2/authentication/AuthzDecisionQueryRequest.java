@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.Action;
 
 public class AuthzDecisionQueryRequest extends Request<AuthzDecisionQueryRequest> {
-  private Subject subject;
 
+  private Subject subject;
   private String resource;
   private List<Action> actions = new ArrayList<>();
 

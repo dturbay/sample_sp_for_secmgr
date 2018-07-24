@@ -47,6 +47,10 @@ public class AuthzDecisionStatement extends ImplementationHolder {
     public static Action parse(String code) {
       return Arrays.stream(values()).filter(a -> a.code.equalsIgnoreCase(code)).findFirst().get();
     }
+
+    public String getCode() {
+      return code;
+    }
   }
 
   private String resource;

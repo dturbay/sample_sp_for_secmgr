@@ -10,6 +10,6 @@ public class ArtifactResolveRequest extends Request<ArtifactResolveRequest> {
 
   public ArtifactResolveRequest setArtifact(Artifact artifact) {
     this.artifact = artifact;
-    return _this();
+    return this;
   }
 }

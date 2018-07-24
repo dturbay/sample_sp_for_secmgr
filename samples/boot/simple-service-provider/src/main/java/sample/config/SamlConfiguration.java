@@ -28,7 +28,7 @@ import org.springframework.security.saml.SamlMessageHandler;
 import org.springframework.security.saml.SamlTransformer;
 import org.springframework.security.saml.SamlValidator;
 import org.springframework.security.saml.config.SamlServerConfiguration;
-import org.springframework.security.saml.saml2.SamlAuthzClient;
+import org.springframework.security.saml.saml2.SamlWsClient;
 import org.springframework.security.saml.saml2.authentication.AuthenticationRequest;
 import org.springframework.security.saml.saml2.metadata.Binding;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
@@ -43,9 +43,9 @@ import org.springframework.security.saml.spi.DefaultSpResponseHandler;
 import org.springframework.security.saml.spi.DefaultValidator;
 import org.springframework.security.saml.spi.Defaults;
 import org.springframework.security.saml.spi.SpringSecuritySaml;
+import org.springframework.security.saml.spi.opensaml.OpenSamlImplementation;
 import org.springframework.security.saml.util.Network;
 import sample.security.saml.AcceptArtifactSpResponseHandler;
-import sample.security.saml.ExtendedOpenSamlImpl;
 
 @Configuration
 public class SamlConfiguration {
@@ -118,7 +118,7 @@ public class SamlConfiguration {
         .setTransformer(transformer())
         .setConfiguration(configuration)
         .setValidator(validator())
-        .setImplementation((ExtendedOpenSamlImpl) implementation());
+        .setSamlWsClient(new SamlWsClient((OpenSamlImplementation) implementation()));
   }
 
 	@Bean
@@ -128,7 +128,7 @@ public class SamlConfiguration {
 
 	@Bean
 	public SpringSecuritySaml implementation() {
-		return new ExtendedOpenSamlImpl(time());
+		return new OpenSamlImplementation(time());
 	}
 
 	@Bean
@@ -170,7 +170,7 @@ public class SamlConfiguration {
 	}
 
 	@Bean
-	public SamlAuthzClient samlAuthzClient() {
-		return new SamlAuthzClient();
+	public SamlWsClient samlAuthzClient() {
+		return new SamlWsClient((OpenSamlImplementation)implementation());
 	}
 }

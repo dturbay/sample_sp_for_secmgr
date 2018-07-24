@@ -36,10 +36,14 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.saml.key.SimpleKey;
+import org.springframework.security.saml.saml2.authentication.Artifact;
+import org.springframework.security.saml.saml2.authentication.ArtifactResolveRequest;
 import org.springframework.security.saml.saml2.authentication.Assertion;
 import org.springframework.security.saml.saml2.authentication.AudienceRestriction;
 import org.springframework.security.saml.saml2.authentication.AuthenticationRequest;
 import org.springframework.security.saml.saml2.authentication.AuthenticationStatement;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionQueryRequest;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.Action;
 import org.springframework.security.saml.saml2.authentication.Conditions;
 import org.springframework.security.saml.saml2.authentication.Issuer;
 import org.springframework.security.saml.saml2.authentication.LogoutRequest;
@@ -205,6 +209,27 @@ public class Defaults {
 		request.setNameIdPolicy(policy);
 		return request;
 	}
+
+
+	public ArtifactResolveRequest artifactResolveRequest(String artifactRep,
+      ServiceProviderMetadata sp) {
+		return new ArtifactResolveRequest()
+        .setId(UUID.randomUUID().toString())
+        .setIssueInstant(new DateTime(time.millis()))
+        .setIssuer(new Issuer().setValue(sp.getEntityId()))
+        .setArtifact(new Artifact(artifactRep));
+	}
+
+	public AuthzDecisionQueryRequest authzDecisionQueryRequest(String sessionId, String resource,
+      List<Action> actions, ServiceProviderMetadata sp) {
+    return new AuthzDecisionQueryRequest()
+        .setId(UUID.randomUUID().toString())
+        .setIssueInstant(new DateTime(time.millis()))
+        .setIssuer(new Issuer().setValue(sp.getEntityId()))
+        .setSubject(new Subject().setPrincipal(new NameIdPrincipal().setValue(sessionId)))
+        .setResource(resource)
+        .setActions(actions);
+  }
 
 	private Endpoint getACSFromSp(ServiceProviderMetadata sp) {
 		Endpoint endpoint = sp.getServiceProvider().getAssertionConsumerService().get(0);

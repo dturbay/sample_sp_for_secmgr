@@ -17,6 +17,7 @@
 package sample.web;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,15 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.saml.SamlObjectResolver;
 import org.springframework.security.saml.config.ExternalProviderConfiguration;
-import org.springframework.security.saml.saml2.SamlAuthzClient;
+import org.springframework.security.saml.saml2.SamlWsClient;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionQueryRequest;
+import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.Action;
 import org.springframework.security.saml.saml2.authentication.Response;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.PolicyDecisionProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
+import org.springframework.security.saml.spi.DefaultSamlTransformer;
+import org.springframework.security.saml.spi.Defaults;
 import org.springframework.security.saml.util.Network;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,7 +56,9 @@ public class ServiceProviderController {
 	private SamlObjectResolver resolver;
 	private Network network;
 
-	private SamlAuthzClient samlAuthzClient;
+  private Defaults defaults;
+  private DefaultSamlTransformer samlTransformer;
+	private SamlWsClient samlWsClient;
 
 	@Autowired
 	public void setNetwork(Network network) {
@@ -69,9 +76,19 @@ public class ServiceProviderController {
 	}
 
 	@Autowired
-	public void setSamlAuthzClient(SamlAuthzClient samlAuthzClient) {
-		this.samlAuthzClient = samlAuthzClient;
+	public void setSamlWsClient(SamlWsClient samlWsClient) {
+		this.samlWsClient = samlWsClient;
 	}
+
+	@Autowired
+  public void setDefaults(Defaults defaults) {
+    this.defaults = defaults;
+  }
+
+  @Autowired
+  public void setDefaultSamlTransformer(DefaultSamlTransformer defaultSamlTransformer) {
+	  this.samlTransformer = defaultSamlTransformer;
+  }
 
 	@RequestMapping(value = {"/", "/index", "logged-in"})
 	public String home(HttpServletRequest request, Model model) {
@@ -87,10 +104,17 @@ public class ServiceProviderController {
         "https://www.google.com/",
         "http://http-authn:4444/resource1",
         "http://http-authn:4444/resource2");
+
     Map<String, String> resourceStatus = resources.stream()
         .collect(Collectors.toMap(Function.identity(), resource -> {
-          Response authzResponse = samlAuthzClient.sendAuthzRequest(resource, gsaSessionId,
-              localServiceProvider, pdpMetadata);
+          AuthzDecisionQueryRequest authzQueryRequest = defaults
+              .authzDecisionQueryRequest(gsaSessionId, resource,
+                  Collections.singletonList(Action.HTTP_GET_ACTION), localServiceProvider);
+
+          String authzQueryRequestXml = samlTransformer.toXml(authzQueryRequest);
+          String authzEndpoint = pdpMetadata.getPolicyDecisionProvider().getAuthzService().get(0)
+              .getLocation();
+          Response authzResponse = samlWsClient.sendRequest(authzQueryRequestXml, authzEndpoint);
           return authzResponse.getAssertions().get(0).getAuthzDecisionStatements().get(0)
               .getDecision().toString();
         }));
