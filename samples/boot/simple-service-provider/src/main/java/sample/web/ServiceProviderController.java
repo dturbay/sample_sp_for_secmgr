@@ -33,6 +33,7 @@ import org.springframework.security.saml.saml2.SamlWsClient;
 import org.springframework.security.saml.saml2.authentication.AuthzDecisionQueryRequest;
 import org.springframework.security.saml.saml2.authentication.AuthzDecisionStatement.Action;
 import org.springframework.security.saml.saml2.authentication.Response;
+import org.springframework.security.saml.saml2.authentication.StatusCode;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.PolicyDecisionProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
@@ -115,8 +116,20 @@ public class ServiceProviderController {
           String authzEndpoint = pdpMetadata.getPolicyDecisionProvider().getAuthzService().get(0)
               .getLocation();
           Response authzResponse = samlWsClient.sendRequest(authzQueryRequestXml, authzEndpoint);
-          return authzResponse.getAssertions().get(0).getAuthzDecisionStatements().get(0)
-              .getDecision().toString();
+          String errorMessage = "";
+          if (authzResponse.getStatus().getCode() != StatusCode.SUCCESS) {
+						errorMessage = authzResponse.getStatus().getCode().toString();
+						if (authzResponse.getStatus().getChildStatusCode() != null) {
+							errorMessage += " / " + authzResponse.getStatus().getChildStatusCode().toString();
+						}
+					}
+					String decisionMsg = authzResponse.getAssertions().get(0).getAuthzDecisionStatements().get(0)
+							.getDecision().toString();
+
+          if (!errorMessage.isEmpty()) {
+						decisionMsg += "   /   " + errorMessage;
+					}
+					return decisionMsg;
         }));
     model.addAttribute("resources", resourceStatus);
     return "logged-in";

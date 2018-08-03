@@ -1291,9 +1291,18 @@ public class OpenSamlImplementation extends SpringSecuritySaml<OpenSamlImplement
 	}
 
 	protected Status getStatus(org.opensaml.saml.saml2.core.Status status) {
-		return new Status()
-			.setCode(StatusCode.fromUrn(status.getStatusCode().getValue()))
-			.setMessage(status.getStatusMessage() != null ? status.getStatusMessage().getMessage() : null);
+   org.opensaml.saml.saml2.core.StatusCode statusCode = status.getStatusCode();
+
+    Status result = new Status()
+				.setCode(StatusCode.fromUrn(statusCode.getValue()))
+				.setMessage(
+						status.getStatusMessage() != null ? status.getStatusMessage().getMessage() : null);
+
+    org.opensaml.saml.saml2.core.StatusCode childCode = statusCode.getStatusCode();
+    if (childCode != null) {
+      result.setChildStatusCode(StatusCode.fromUrn(childCode.getValue()));
+    }
+		return result;
 	}
 
 	protected Assertion resolveAssertion(

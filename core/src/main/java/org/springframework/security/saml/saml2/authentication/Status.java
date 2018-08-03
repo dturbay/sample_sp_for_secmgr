@@ -22,6 +22,8 @@ public class Status {
 	private String message;
 	private String detail;
 
+	private StatusCode childStatusCode;
+
 	public StatusCode getCode() {
 		return code;
 	}
@@ -46,6 +48,15 @@ public class Status {
 
 	public Status setDetail(String detail) {
 		this.detail = detail;
+		return this;
+	}
+
+	public StatusCode getChildStatusCode() {
+		return childStatusCode;
+	}
+
+	public Status setChildStatusCode(StatusCode childStatusCode) {
+		this.childStatusCode = childStatusCode;
 		return this;
 	}
 }
