@@ -16,8 +16,11 @@
  */
 
 include "core"
-include "samples/boot/simple-service-provider"
-include "samples/boot/simple-identity-provider"
+include ":simple-service-provider"
+project(":simple-service-provider").projectDir = new File('./samples/boot/simple-service-provider')
+
+include ":simple-identity-provider"
+project(":simple-identity-provider").projectDir = new File('./samples/boot/simple-identity-provider')
 
 rootProject.name = "spring-security-saml"
 

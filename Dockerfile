@@ -14,14 +14,14 @@ COPY ./gradle ${BUILD_APP_DIR}/gradle
 
 RUN apk update && apk add bash
 RUN cd ${BUILD_APP_DIR} \
-	&& ./gradlew -b ./samples/boot/simple-service-provider/build.gradle bootJar
+	&& ./gradlew bootJar
 
 
 FROM openjdk:8-jre-alpine
 
-ENV APP_NAME=simple-service-provider-2.0.0.BUILD-SNAPSHOT.jar
+ENV APP_NAME=spring-security-saml-simple-service-provider-2.0.0.BUILD-SNAPSHOT.jar
 
-COPY --from=BUILD /usr/src/myapp/samples/boot/simple-service-provider/build/libs/spring-security-saml-samples/boot/${APP_NAME} /opt/
+COPY --from=BUILD /usr/src/myapp/samples/boot/simple-service-provider/build/libs/${APP_NAME} /opt/
 
 EXPOSE 8088
 

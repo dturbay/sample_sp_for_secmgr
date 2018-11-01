@@ -19,6 +19,7 @@ package sample;
 import java.lang.reflect.Field;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -26,12 +27,12 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.apache.commons.httpclient.protocol.ReflectionSocketFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SimpleServiceProviderApplication {
-
+public class SimpleServiceProviderApplication implements CommandLineRunner {
 
 	public static void main(String[] args) throws ClassNotFoundException {
 
@@ -86,5 +87,11 @@ public class SimpleServiceProviderApplication {
     }
   }
 
-
+  @Override
+  public void run(String... args) throws Exception {
+	  // pass params via:
+    // ./gradlew -b ./samples/boot/simple-service-provider/build.gradle bootRun --args 'param1 param2'
+    System.out.println("-------------------------- Cmd line starter ------------------");
+    System.out.println("Args: " + Arrays.toString(args));
+  }
 }
