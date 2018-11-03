@@ -7,10 +7,12 @@ server:
 
 logging:
   level:
-    root: INFO
-    org.springframework.web: INFO
-    org.springframework.security: INFO
-    org.springframework.security.saml2: INFO
+    root: ERROR
+    sample: INFO
+#    root: INFO
+#    org.springframework.web: INFO
+#    org.springframework.security: INFO
+#    org.springframework.security.saml2: INFO
 
 spring:
   thymeleaf:
@@ -89,12 +91,12 @@ spring:
             <?xml version="1.0" encoding="UTF-8"?>
             <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY1" ID="security-manager">
               <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://secmgr1:8090/security-manager/samlartifact" />
+                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://secmgr1/security-manager/samlartifact" />
                 <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
-                <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr1:8493/security-manager/samlauthn" />
+                <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr1/security-manager/samlauthn" />
               </IDPSSODescriptor>
               <PDPDescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-                  <AuthzService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr1:8493/security-manager/samlauthz" />
+                  <AuthzService Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr1/security-manager/samlauthz" />
               </PDPDescriptor>
               <Organization>
                 <OrganizationName xml:lang="en">google.com</OrganizationName>

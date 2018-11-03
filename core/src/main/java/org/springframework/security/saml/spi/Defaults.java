@@ -30,11 +30,14 @@
  */
 package org.springframework.security.saml.spi;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.saml.SamlTransformer;
 import org.springframework.security.saml.key.SimpleKey;
 import org.springframework.security.saml.saml2.authentication.Artifact;
 import org.springframework.security.saml.saml2.authentication.ArtifactResolveRequest;
@@ -70,6 +73,7 @@ import org.springframework.security.saml.saml2.signature.DigestMethod;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.joda.time.DateTime;
+import org.springframework.web.util.UriUtils;
 
 import static java.util.Arrays.asList;
 import static org.springframework.security.saml.saml2.authentication.RequestedAuthenticationContext.exact;
@@ -429,4 +433,33 @@ public class Defaults {
 		}
 		return result;
 	}
+
+  public String getAuthnRequestRedirect(
+      IdentityProviderMetadata m,
+      AuthenticationRequest authenticationRequest,
+      SamlTransformer transformer, String appBaseWebPath) {
+    String encoded = getEncodedAuthnRequestValue(authenticationRequest, transformer);
+    Endpoint endpoint = m.getIdentityProvider().getSingleSignOnService().get(0);
+    UriComponentsBuilder url = UriComponentsBuilder.fromUriString(endpoint.getLocation());
+    url.queryParam("SAMLRequest", encoded);
+    try {
+      url.queryParam("RelayState", UriUtils
+          .encode(appBaseWebPath, StandardCharsets.UTF_8.name()));
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+    return url.build(true).toUriString();
+  }
+
+  private String getEncodedAuthnRequestValue(AuthenticationRequest authenticationRequest,
+      SamlTransformer transformer) {
+    String xml = transformer.toXml(authenticationRequest);
+    String deflated = transformer.samlEncode(xml, true);
+    try {
+      return UriUtils.encode(deflated, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }

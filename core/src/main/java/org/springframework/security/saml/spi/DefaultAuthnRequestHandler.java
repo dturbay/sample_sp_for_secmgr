@@ -18,19 +18,14 @@
 package org.springframework.security.saml.spi;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.saml.SamlMessageHandler;
 import org.springframework.security.saml.config.LocalServiceProviderConfiguration;
 import org.springframework.security.saml.saml2.authentication.AuthenticationRequest;
-import org.springframework.security.saml.saml2.metadata.Endpoint;
 import org.springframework.security.saml.saml2.metadata.IdentityProviderMetadata;
 import org.springframework.security.saml.saml2.metadata.ServiceProviderMetadata;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.UriUtils;
 
 public class DefaultAuthnRequestHandler extends SamlMessageHandler<DefaultAuthnRequestHandler> {
 
@@ -38,39 +33,16 @@ public class DefaultAuthnRequestHandler extends SamlMessageHandler<DefaultAuthnR
 	@Override
 	protected ProcessingStatus process(HttpServletRequest request,
 									   HttpServletResponse response) throws IOException {
-		ServiceProviderMetadata local = getResolver().getLocalServiceProvider(getNetwork().getBasePath(request));
+		String appBaseWebPath = getNetwork().getBasePath(request);
+		ServiceProviderMetadata local = getResolver().getLocalServiceProvider(appBaseWebPath);
 		String idpId = request.getParameter("idp");
 		request.getSession().setAttribute("idp", idpId);
 		IdentityProviderMetadata idp = getResolver().resolveIdentityProvider(idpId);
-		AuthenticationRequest authenticationRequest = getAuthenticationRequest(local, idp);
-		String url = getAuthnRequestRedirect(idp, authenticationRequest);
+		AuthenticationRequest authenticationRequest = getDefaults().authenticationRequest(local, idp);
+		String url = getDefaults().getAuthnRequestRedirect(idp, authenticationRequest,
+				getTransformer(), appBaseWebPath);
 		response.sendRedirect(url);
 		return ProcessingStatus.STOP;
-	}
-
-	protected AuthenticationRequest getAuthenticationRequest(ServiceProviderMetadata local,
-															 IdentityProviderMetadata idp) {
-		return getDefaults().authenticationRequest(local, idp);
-	}
-
-	protected String getAuthnRequestRedirect(
-		IdentityProviderMetadata m,
-		AuthenticationRequest authenticationRequest
-	) throws
-	  UnsupportedEncodingException {
-		String encoded = getEncodedAuthnRequestValue(authenticationRequest);
-		Endpoint endpoint = m.getIdentityProvider().getSingleSignOnService().get(0);
-		UriComponentsBuilder url = UriComponentsBuilder.fromUriString(endpoint.getLocation());
-		url.queryParam("SAMLRequest", encoded);
-		url.queryParam("RelayState", UriUtils.encode("http://localhost:8088/sample-sp", StandardCharsets.UTF_8.name()));
-		return url.build(true).toUriString();
-	}
-
-	protected String getEncodedAuthnRequestValue(AuthenticationRequest authenticationRequest)
-		throws UnsupportedEncodingException {
-		String xml = getTransformer().toXml(authenticationRequest);
-		String deflated = getTransformer().samlEncode(xml, true);
-		return UriUtils.encode(deflated, StandardCharsets.UTF_8.name());
 	}
 
 	@Override

@@ -64,7 +64,7 @@ public class AcceptArtifactSpResponseHandler extends SamlMessageHandler<AcceptAr
     }
 	}
 
-  private Response resolveArtifact(final String artifactString,
+  public Response resolveArtifact(final String artifactString,
       ServiceProviderMetadata local, String idpId)
       throws IllegalArgumentException, SecurityException {
 

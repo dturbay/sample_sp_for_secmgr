@@ -106,18 +106,26 @@ public class ServiceProviderController {
         "http://http-authn:4444/resource1",
         "http://http-authn:4444/resource2");
 
-    Map<String, String> resourceStatus = resources.stream()
-        .collect(Collectors.toMap(Function.identity(), resource -> {
-          AuthzDecisionQueryRequest authzQueryRequest = defaults
-              .authzDecisionQueryRequest(gsaSessionId, resource,
-                  Collections.singletonList(Action.HTTP_GET_ACTION), localServiceProvider);
+    Map<String, String> resourceStatus = getDecisionForResources(localServiceProvider, pdpMetadata,
+				gsaSessionId, resources);
+    model.addAttribute("resources", resourceStatus);
+    return "logged-in";
+	}
 
-          String authzQueryRequestXml = samlTransformer.toXml(authzQueryRequest);
-          String authzEndpoint = pdpMetadata.getPolicyDecisionProvider().getAuthzService().get(0)
-              .getLocation();
-          Response authzResponse = samlWsClient.sendRequest(authzQueryRequestXml, authzEndpoint);
-          String errorMessage = "";
-          if (authzResponse.getStatus().getCode() != StatusCode.SUCCESS) {
+	public Map<String, String> getDecisionForResources(ServiceProviderMetadata localServiceProvider,
+			PolicyDecisionProviderMetadata pdpMetadata, String gsaSessionId, List<String> resources) {
+		return resources.stream()
+				.collect(Collectors.toMap(Function.identity(), resource -> {
+					AuthzDecisionQueryRequest authzQueryRequest = defaults
+							.authzDecisionQueryRequest(gsaSessionId, resource,
+									Collections.singletonList(Action.HTTP_GET_ACTION), localServiceProvider);
+
+					String authzQueryRequestXml = samlTransformer.toXml(authzQueryRequest);
+					String authzEndpoint = pdpMetadata.getPolicyDecisionProvider().getAuthzService().get(0)
+							.getLocation();
+					Response authzResponse = samlWsClient.sendRequest(authzQueryRequestXml, authzEndpoint);
+					String errorMessage = "";
+					if (authzResponse.getStatus().getCode() != StatusCode.SUCCESS) {
 						errorMessage = authzResponse.getStatus().getCode().toString();
 						if (authzResponse.getStatus().getChildStatusCode() != null) {
 							errorMessage += " / " + authzResponse.getStatus().getChildStatusCode().toString();
@@ -126,13 +134,11 @@ public class ServiceProviderController {
 					String decisionMsg = authzResponse.getAssertions().get(0).getAuthzDecisionStatements().get(0)
 							.getDecision().toString();
 
-          if (!errorMessage.isEmpty()) {
+					if (!errorMessage.isEmpty()) {
 						decisionMsg += "   /   " + errorMessage;
 					}
 					return decisionMsg;
-        }));
-    model.addAttribute("resources", resourceStatus);
-    return "logged-in";
+				}));
 	}
 
 	@RequestMapping("/saml/sp/select")
