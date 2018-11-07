@@ -23,6 +23,11 @@ ENV APP_NAME=spring-security-saml-simple-service-provider-2.0.0.BUILD-SNAPSHOT.j
 
 COPY --from=BUILD /usr/src/myapp/samples/boot/simple-service-provider/build/libs/${APP_NAME} /opt/
 
+COPY ./secmgr1.crt /usr/local/share/ca-certificates/secmgr1.crt
+RUN update-ca-certificates
+RUN keytool -noprompt -import -alias secmgr1 -file /usr/local/share/ca-certificates/secmgr1.crt -keystore cacerts -storepass changeit
+
+
 EXPOSE 8088
 
 CMD ["sh", "-c", "java -jar /opt/${APP_NAME}"]

@@ -3,8 +3,6 @@ server:
   servlet:
     context-path: /sample-sp
 
-
-
 logging:
   level:
     root: ERROR
@@ -71,7 +69,7 @@ spring:
             <?xml version="1.0" encoding="UTF-8"?>
             <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY" ID="security-manager">
               <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://secmgr:8080/security-manager/samlartifact" />
+                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr:8443/security-manager/samlartifact" />
                 <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr:8443/security-manager/samlauthn" />
               </IDPSSODescriptor>
@@ -91,7 +89,7 @@ spring:
             <?xml version="1.0" encoding="UTF-8"?>
             <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://google.com/enterprise/gsa/T4-KRQHV3XHUQEXY1" ID="security-manager">
               <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
-                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="http://secmgr1/security-manager/samlartifact" />
+                <ArtifactResolutionService index="0" isDefault="true" Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP" Location="https://secmgr1/security-manager/samlartifact" />
                 <NameIDFormat>       urn:oasis:names:tc:SAML:2.0:nameid-format:transient     </NameIDFormat>
                 <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact" Location="https://secmgr1/security-manager/samlauthn" />
               </IDPSSODescriptor>
