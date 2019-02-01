@@ -442,12 +442,8 @@ public class Defaults {
     Endpoint endpoint = m.getIdentityProvider().getSingleSignOnService().get(0);
     UriComponentsBuilder url = UriComponentsBuilder.fromUriString(endpoint.getLocation());
     url.queryParam("SAMLRequest", encoded);
-    try {
-      url.queryParam("RelayState", UriUtils
-          .encode(appBaseWebPath, StandardCharsets.UTF_8.name()));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+		url.queryParam("RelayState", UriUtils
+				.encode(appBaseWebPath, StandardCharsets.UTF_8.name()));
     return url.build(true).toUriString();
   }
 
@@ -455,11 +451,7 @@ public class Defaults {
       SamlTransformer transformer) {
     String xml = transformer.toXml(authenticationRequest);
     String deflated = transformer.samlEncode(xml, true);
-    try {
-      return UriUtils.encode(deflated, StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+		return UriUtils.encode(deflated, StandardCharsets.UTF_8.name());
   }
 
 }
